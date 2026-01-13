@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI GAME - Home</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <a href="index.html" class="logo">AI GAME</a>
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-item active">Home</a>
+            <a href="prompting.html" class="nav-item">Prompting</a>
+            <a href="template.html" class="nav-item">Templates</a>
+            <a href="about.html" class="nav-item">About</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="hero-section">
+            <h1>Welcome to AI GAME</h1>
+            <p>Create and play games powered by artificial intelligence</p>
+            <div class="action-buttons">
+                <a href="prompting.html" class="action-btn">Start Prompting</a>
+                <a href="template.html" class="action-btn">Browse Templates</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Add active class to current nav item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('href') === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+    </script>
+    <script src="js/main.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

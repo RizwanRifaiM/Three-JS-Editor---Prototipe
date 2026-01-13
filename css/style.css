@@ -1,0 +1,170 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Instrument Sans', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #000000;
+    color: white;
+    min-height: 100vh;
+    line-height: 1.6;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 250px;
+    background-color: #111;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 250px;
+    border-right: 1px solid #333;
+    box-sizing: border-box;
+}
+
+.logo {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    border-bottom: 1px solid #333;
+    margin-bottom: 20px;
+    text-decoration: none;
+}
+
+.nav-menu {
+    flex-grow: 1;
+}
+
+.nav-item {
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #333;
+}
+
+.nav-item.active {
+    background-color: #444;
+    border-left: 4px solid #fff;
+}
+
+/* Main content area */
+.main-content {
+    flex: 1;
+    display: flex;
+    background: #000;
+    height: 100vh;
+    margin: 1rem;
+}
+
+.content-header {
+    padding: 15px 20px;
+    background: #111;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.content-frame {
+    flex-grow: 1;
+    position: relative;
+    padding: 20px;
+}
+
+.content-container {
+    display: none;
+    width: 100%;
+    min-height: 100%;
+}
+
+.content-container.active {
+    display: block;
+}
+
+iframe {
+    width: 100%;
+    min-height: 100%;
+    border: none;
+    background: #000;
+    display: block;
+}
+
+/* Game selector styles */
+.game-selector {
+    margin:0;
+}
+
+.game-selector select {
+    width: 100%;
+    padding: 10px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex: 0 0 auto;
+        border-right: none;
+        border-bottom: 1px solid #333;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .main-content {
+        height: auto;
+        min-height: calc(100vh - 60px);
+    }
+    
+    .nav-menu {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0 10px;
+    }
+    
+    .nav-item {
+        padding: 8px 12px;
+    }
+    
+    .game-selector {
+        padding: 0 10px;
+        margin: 10px 0;
+    }
+    
+    .content-header {
+        padding: 10px 15px;
+    }
+    
+    iframe {
+        min-height: 500px;
+    }
+}

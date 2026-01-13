@@ -1,0 +1,125 @@
+/* Header Styles */
+.main-header {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    text-align: center;
+}
+
+.header-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #8FABD4, #4A70A9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Navigation Styles */
+.main-nav {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-nav .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.main-nav .nav-links {
+    display: flex;
+    gap: 3rem;
+}
+
+.main-nav .nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.main-nav .nav-link:hover {
+    background: linear-gradient(45deg, #4A70A9, #8FABD4);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 112, 169, 0.3);
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 200px);
+    padding: 3rem 2rem;
+}
+
+.hero-section {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 2.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    background: linear-gradient(45deg, #4A70A9 0%, #8FABD4 100%);
+    color: white;
+    padding: 1.8rem 3.5rem;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(74, 112, 169, 0.4);
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    min-width: 220px;
+}
+
+.action-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(74, 112, 169, 0.6);
+    background: linear-gradient(45deg, #8FABD4 0%, #4A70A9 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 2.5rem;
+    }
+    
+    .main-nav .nav-links {
+        gap: 1.5rem;
+    }
+    
+    .main-nav .nav-link {
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        gap: 1.5rem;
+    }
+    
+    .action-btn {
+        padding: 1.5rem 2.5rem;
+        font-size: 1.2rem;
+        min-width: 200px;
+    }
+}

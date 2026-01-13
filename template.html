@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI GAME - Templates</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/template.css">
+    <link href="https:">
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https:"></script>
+    <script src="https:"></script>
+</head>
+<body>
+    <div class="game-list-container">
+        <div class="game-list" id="game-list" aria-label="Available game templates">
+            <div class="game-list-header">Templates</div>
+            <button data-file="basic.js">Basic Box 1</button>
+            <button data-file="basic2.js">Basic Box 2</button>
+            <button data-file="asteroids2D.js">Asteroids 2D</button>
+            <button data-file="breakout2D.js">Breakout 2D</button>
+            <button data-file="collector2D.js">Collector 2D</button>
+            <button data-file="endlessRunner3D.js">Endless Runner 3D</button>
+            <button data-file="maze2D.js">Maze 2D</button>
+            <button data-file="maze3D.js">Maze 3D</button>
+            <button data-file="parkour3D-firstperson.js">Parkour 3D (First Person)</button>
+            <button data-file="parkour3D-thirdperson.js">Parkour 3D (Third Person)</button>
+            <button data-file="pong2D.js">Pong 2D</button>
+            <button data-file="pong3D.js">Pong 3D</button>
+            <button data-file="puzzle.js">Puzzle</button>
+            <button data-file="race2d.js">Race 2D</button>
+            <button data-file="race3d.js">Race 3D</button>
+            <button data-file="rpg2D.js">RPG 2D</button>
+            <button data-file="rpg3D.js">RPG 3D</button>
+            <button data-file="rubik.js">Rubik</button>
+            <button data-file="runner2D.js">Runner 2D</button>
+            <button data-file="runner3D.js">Runner 3D</button>
+            <button data-file="shooter2D.js">Shooter 2D</button>
+            <button data-file="snake2D.js">Snake 2D</button>
+            <button data-file="snake3D.js">Snake 3D</button>
+            <button data-file="spaceShooter2D.js">Space Shooter 2D</button>
+            <button data-file="spaceShooter3D.js">Space Shooter 3D</button>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="layout">
+            <div id="game-canvas-container">
+                <div class="game-placeholder">
+                    <h2>Select a game from the list to begin</h2>
+                    <p>Choose a game template from the menu on the left to load it here.</p>
+                </div>
+            </div>
+
+            <aside id="code-box">
+                <div class="code-header">Code</div>
+                <pre id="code-content">Select a game to view its code.</pre>
+            </aside>
+        </div>
+    </main>
+
+    <style>
+    .layout{display:flex;gap:16px;padding:16px}
+    #game-canvas-container{flex:1;min-height:400px;border:1px solid #ddd;padding:8px;background:#f9f9f9}
+    #code-box{width:40%;max-width:600px;border:1px solid #ddd;background:#111;color:#eee;padding:8px;overflow:auto}
+    #code-box .code-header{font-weight:700;margin-bottom:8px}
+    #code-content{white-space:pre-wrap;font-family:Consolas,monospace;font-size:12px;line-height:1.4}
+    .game-list-container{padding:8px}
+    .game-list{max-height:90vh;overflow:auto;border:1px solid #ddd;padding:8px;background:#fff}
+    .game-list .game-list-header{font-weight:700;margin-bottom:8px}
+    .game-list button{display:block;width:100%;text-align:left;padding:6px 8px;margin:4px 0;border:0;background:#f0f0f0;cursor:pointer}
+    .game-list button:hover{background:#e0e0e0}
+    </style>
+
+    <script>
+    let lastGameScript = null;
+
+    function clearGameCanvas() {
+        if (typeof window.__GAME_DESTROY === "function") {
+            try { window.__GAME_DESTROY(); } catch(e) {}
+            window.__GAME_DESTROY = undefined;
+        }
+        const container = document.getElementById('game-canvas-container');
+        while (container.firstChild) container.removeChild(container.firstChild);
+        if (lastGameScript && lastGameScript.parentNode) lastGameScript.parentNode.removeChild(lastGameScript);
+        lastGameScript = null;
+    }
+
+    function showPlaceholder() {
+        clearGameCanvas();
+        const ph = document.createElement('div');
+        ph.className = 'game-placeholder';
+        ph.innerHTML = `
+            <h2>Select a game from the list to begin</h2>
+            <p>Choose a game template from the menu on the left to load it here.</p>
+        `;
+        document.getElementById('game-canvas-container').appendChild(ph);
+        const code = document.getElementById('code-content');
+        if(code) code.textContent = 'Select a game to view its code.';
+    }
+
+    function loadGameFile(file) {
+        if (!file) return showPlaceholder();
+        clearGameCanvas();
+
+        // Fetch code for display
+        fetch('template/' + file).then(r => {
+            if (!r.ok) throw new Error('Network response was not ok');
+            return r.text();
+        }).then(text => {
+            const codeEl = document.getElementById('code-content');
+            if (codeEl) codeEl.textContent = text;
+        }).catch(e => {
+            const codeEl = document.getElementById('code-content');
+            if (codeEl) codeEl.textContent = 'Failed to load code: ' + e.message;
+        });
+
+        // Load and run script
+        const script = document.createElement('script');
+        script.src = 'template/' + file;
+        script.async = false;
+        script.id = 'gamescript';
+        script.onload = function() {};
+        script.onerror = function() {
+            showPlaceholder();
+            alert('Failed to load "' + file + '".');
+        };
+        lastGameScript = script;
+        document.body.appendChild(script);
+    }
+
+    // Attach listeners to buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('#game-list button[data-file]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const file = this.getAttribute('data-file');
+                loadGameFile(file);
+            });
+        });
+        showPlaceholder();
+    });
+    </script>
+</body>
+</html>

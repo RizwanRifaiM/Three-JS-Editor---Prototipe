@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI GAME - Prompting</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/prompting.css">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <script type="module" src="https://esm.run/@google/generative-ai"></script>
+</head>
+<body>
+    
+
+    <main class="prompting-container">
+        <div class="prompt-panel">
+            <h1 class="page-title">Prompt here</h1>
+            
+            <div class="prompt-section">
+                <textarea class="prompt-input" placeholder="Enter your game prompt here..."></textarea>
+                <div class="language-selector">
+                    <label>Output Language</label>
+                    <select class="language-dropdown">
+                        <option value="threejs">Three.js</option>
+                        <option value="python">Python</option>
+                        <option value="php">PHP</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                    </select>
+                </div>
+                <div class="api-key-selector">
+                    <label>Gemini API Key</label>
+                    <input type="password" class="api-key-input" placeholder="Enter your Gemini API key">
+                </div>
+                <button class="generate-btn">Generate Game</button>
+            </div>
+
+            <div class="template-section">
+                <a href="template.html" class="template-btn">Template Games</a>
+            </div>
+        </div>
+
+        <div class="canvas-panel">
+            <div class="canvas-header">
+                <button class="view-toggle active" data-view="code">Code</button>
+                <button class="view-toggle" data-view="preview">Preview</button>
+                <div class="canvas-actions">
+                    <button class="action-btn" id="copy-btn">Copy</button>
+                    <button class="action-btn" id="edit-btn">Edit</button>
+                </div>
+            </div>
+            <div class="canvas-content">
+                <div class="code-view active">
+                    <pre class="code-output" id="code-output">Generated code will appear here...</pre>
+                </div>
+                <div class="preview-view">
+                    <iframe class="game-preview" id="game-preview" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script type="module" src="js/prompting.js"></script>
+</body>
+</html>

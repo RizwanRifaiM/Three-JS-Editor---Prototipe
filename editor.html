@@ -1,0 +1,444 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Game Editor</title>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/object-management.js"></script>
+    <script src="js/material-editor.js"></script>
+    <script src="js/camera-controls.js"></script>
+    <script src="js/inspector.js"></script>
+    <script src="js/editor-core.js"></script>
+    <script src="js/code-generator.js"></script>
+    <script src="js/mode-switching.js"></script>
+    <script src="js/animation.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .editor-container {
+            display: grid;
+            grid-template-columns: 20% 60% 20%;
+            height: 100vh;
+            gap: 5px;
+        }
+        .editor-container .item-container {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            border: 1px solid #444;
+            padding: 10px;
+            overflow-y: auto;
+            height: 100%;
+        }
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .game {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+        #canvas {
+            display: block;
+            height: 100%;
+            width: 100%;
+            background: #1a1a1a;
+        }
+        #canvas canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+        }
+        #codeDisplay {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: none;
+            padding: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            resize: none;
+        }
+        button {
+            background: #444;
+            color: white;
+            border: 1px solid #666;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #555;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+        input[type="file"] {
+            color: white;
+            margin: 5px;
+        }
+        .inspector-section {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .inspector-input {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .inspector-input:focus {
+            outline: none;
+            border-color: #007bff;
+            background: #252525;
+        }
+        .object-list {
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+            padding: 5px 0;
+        }
+        .object-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .object-list::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        .object-list::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        .object-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .selected-object {
+            background: #252525;
+            padding: 10px;
+            margin: 4px 0;
+            cursor: pointer;
+            border-left: 3px solid #666;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .selected-object:hover {
+            background: #2a2a2a;
+            border-left-color: #999;
+        }
+        .selected-object.active {
+            background: #1e3a52;
+            border-left-color: #007bff;
+            color: #00bfff;
+        }
+        .mode-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .mode-buttons button.active {
+            background: #007bff;
+        }
+        .control-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .animation-controls {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .animation-controls label {
+            font-size: 12px;
+            color: white;
+            min-width: 100px;
+        }
+        .anim-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .anim-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Left Panel - Object Library -->
+        <div class="item-container">
+            <h2>Object Library</h2>
+            <div class="mode-buttons">
+                <button id="editModeBtn" class="active" onclick="setEditMode()">Edit Mode</button>
+                <button id="previewModeBtn" onclick="setPreviewMode()">Preview Mode</button>
+            </div>
+            <div class="element">
+                <h3>Primitives</h3>
+                <ul>
+                    <li><button onclick="addObject('cube')">Cube</button></li>
+                    <li><button onclick="addObject('sphere')">Sphere</button></li>
+                    <li><button onclick="addObject('cone')">Cone</button></li>
+                    <li><button onclick="addObject('cylinder')">Cylinder</button></li>
+                    <li><button onclick="addObject('plane')">Plane</button></li>
+                </ul>
+
+                <h3>Lights</h3>
+                <ul>
+                    <li><button onclick="addLight('ambient')">Ambient Light</button></li>
+                    <li><button onclick="addLight('directional')">Directional Light</button></li>
+                    <li><button onclick="addLight('point')">Point Light</button></li>
+                </ul>
+
+                <h3>Import</h3>
+                <ul>
+                    <li>
+                        <input type="file" id="gltfInput" accept=".glb,.gltf" onchange="loadGLTF(this.files[0])">
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Center Panel - Canvas -->
+        <div class="item-container">
+            <h2>Canvas 
+                <button onclick="switchToPreview()">Preview</button>
+                <button onclick="switchToCode()">Code</button>
+                <button onclick="exportGame()">Export</button>
+            </h2>
+            <div class="game canvas-container">
+                <div id="canvas"></div>
+                <textarea id="codeDisplay"></textarea>
+                <div class="control-info">
+                    Edit Mode: LMB+Drag = Rotate, Shift+LMB = Pan, Wheel = Zoom<br>
+                    Preview Mode: WASD = Move, Mouse = Look
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Inspector -->
+<div class="item-container">
+    <h2>Inspector</h2>
+    <div id="inspectorContent">
+        <div class="object-list" id="objectList"></div>
+        <div id="propertyEditor" style="display:none;">
+            <div class="inspector-section">
+                <h3>Transform</h3>
+                Position:
+                <input type="number" class="inspector-input" data-property="position.x" step="0.1" placeholder="X">
+                <input type="number" class="inspector-input" data-property="position.y" step="0.1" placeholder="Y">
+                <input type="number" class="inspector-input" data-property="position.z" step="0.1" placeholder="Z">
+                
+                Rotation:
+                <input type="number" class="inspector-input" data-property="rotation.x" step="0.1" placeholder="X">
+                <input type="number" class="inspector-input" data-property="rotation.y" step="0.1" placeholder="Y">
+                <input type="number" class="inspector-input" data-property="rotation.z" step="0.1" placeholder="Z">
+                
+                Scale:
+                <input type="number" class="inspector-input" data-property="scale.x" step="0.1" placeholder="X">
+                <input type="number" class="inspector-input" data-property="scale.y" step="0.1" placeholder="Y">
+                <input type="number" class="inspector-input" data-property="scale.z" step="0.1" placeholder="Z">
+            </div>
+            
+            <!-- Updated Material Section with roughness/metalness controls -->
+            <div class="inspector-section" id="materialSection" style="display:none; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #4fc3f7;">Material</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 5px;">Color</label>
+                    <input type="color" data-property="material.color" class="inspector-input" 
+                           onchange="updateObjectProperty(event)" value="#ffffff"
+                           style="width: 100%; height: 40px; padding: 0; border: none; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 5px;">Roughness</label>
+                    <input type="range" min="0" max="1" step="0.01" data-property="material.roughness" 
+                           class="inspector-input" oninput="updateObjectProperty(event)" value="0.7"
+                           style="width: 100%; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; color: #888; font-size: 12px;">
+                        <span>Smooth</span>
+                        <span>Rough</span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 5px;">Metalness</label>
+                    <input type="range" min="0" max="1" step="0.01" data-property="material.metalness" 
+                           class="inspector-input" oninput="updateObjectProperty(event)" value="0.2"
+                           style="width: 100%; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; color: #888; font-size: 12px;">
+                        <span>Non-Metallic</span>
+                        <span>Metallic</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="updateSelectedObject()" class="button" style="flex: 1; padding: 10px;">Apply Changes</button>
+                    <button onclick="deleteSelectedObject()" class="button" style="flex: 1; padding: 10px; background: #dc3545;">Delete Object</button>
+                </div>
+            </div>
+
+            <!-- New Texture Section -->
+            <div class="inspector-section" id="textureSection" style="display: none; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #4fc3f7;">Texture</h3>
+                
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div id="texturePreview" style="width: 80px; height: 80px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; overflow: hidden;">
+                        No Texture
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="textureName" style="color: #ccc; margin-bottom: 10px; font-size: 14px; word-break: break-word;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="document.getElementById('textureFile').click()" class="button" style="flex: 1;">Load Texture</button>
+                            <button onclick="removeTexture()" class="button" style="flex: 1; background: #6c757d;">Remove Texture</button>
+                        </div>
+                        <input type="file" id="textureFile" accept="image/*" onchange="loadTexture(event)" style="display: none;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 8px;">Normal Map</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="document.getElementById('normalMapFile').click()" class="button" style="flex: 1;">Load Normal Map</button>
+                        <button onclick="removeNormalMap()" class="button" style="flex: 1; background: #6c757d;">Remove Normal</button>
+                    </div>
+                    <input type="file" id="normalMapFile" accept="image/*" onchange="loadNormalMap(event)" style="display: none;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 8px;">Texture Scale</label>
+                    <input type="range" id="textureScale" min="0.1" max="5" step="0.1" value="1" 
+                           oninput="updateTextureScale(event)" 
+                           style="width: 100%; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; color: #888; font-size: 12px;">
+                        <span>Small</span>
+                        <span id="textureScaleValue">1.0</span>
+                        <span>Large</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Heightmap/Terrain Section -->
+            <div class="inspector-section" id="heightmapSection" style="display: none; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #4fc3f7;">Terrain/Heightmap</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 8px;">Height Scale</label>
+                    <input type="range" id="heightScale" min="0.1" max="10" step="0.1" value="1.0" 
+                           oninput="updateHeightScale(event)" 
+                           style="width: 100%; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; color: #888; font-size: 12px;">
+                        <span>Flat</span>
+                        <span id="heightScaleValue">1.0</span>
+                        <span>Mountainous</span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="color: #ccc; font-size: 14px; display: block; margin-bottom: 8px;">Load Heightmap Image</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="document.getElementById('heightmapFile').click()" class="button">Browse Heightmap</button>
+                        <input type="file" id="heightmapFile" accept="image/*" onchange="loadHeightmap(event)" style="display: none;">
+                        <div style="color: #888; font-size: 12px; line-height: 1.4;">
+                            Use grayscale images (white = high, black = low)<br>
+                            Best results with 512x512 or 1024x1024 images
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button onclick="generateRandomHeightmap()" class="button" style="width: 100%; padding: 12px; background: #28a745;">
+                        Generate Random Terrain
+                    </button>
+                    <button onclick="resetHeightmap()" class="button" style="width: 100%; padding: 10px; background: #6c757d;">
+                        Reset to Flat
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                    <div style="color: #4fc3f7; font-size: 12px; margin-bottom: 5px;">Terrain Info:</div>
+                    <div id="terrainInfo" style="color: #888; font-size: 11px; line-height: 1.4;">
+                        Select a plane object to enable terrain tools
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animation Section -->
+            <div class="inspector-section" id="animationSection" style="display:none; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #4fc3f7;">Animation (Preview Mode Only)</h3>
+                
+                <div class="animation-controls">
+                    <label style="width: 100%; margin-bottom: 8px; color: #ccc;">Move to Position:</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                        <input type="number" id="animPosX" step="0.1" placeholder="X" style="flex: 1; padding: 8px;">
+                        <input type="number" id="animPosY" step="0.1" placeholder="Y" style="flex: 1; padding: 8px;">
+                        <input type="number" id="animPosZ" step="0.1" placeholder="Z" style="flex: 1; padding: 8px;">
+                    </div>
+                    <button onclick="animateToPosition()" class="anim-btn" style="width: 100%; padding: 10px;">Move to Position</button>
+                </div>
+                
+                <div class="animation-controls" style="margin: 15px 0;">
+                    <button onclick="animateToCamera()" class="anim-btn" style="width: 100%; padding: 10px; background: #17a2b8;">Move to Camera Position</button>
+                </div>
+                
+                <div class="animation-controls">
+                    <label style="width: 100%; margin-bottom: 8px; color: #ccc;">Animation Settings:</label>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <span style="color: #ccc; font-size: 14px;">Duration:</span>
+                        <input type="number" id="animDuration" value="2" step="0.1" min="0.1" style="width: 80px; padding: 8px;">
+                        <span style="color: #ccc; font-size: 14px;">seconds</span>
+                    </div>
+                </div>
+                
+                <div class="animation-controls">
+                    <button onclick="stopAnimation()" class="anim-btn" style="width: 100%; padding: 10px; background: #ffc107;">Stop All Animations</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <div style="color: #888; font-size: 12px; line-height: 1.4;">
+                        <strong>Note:</strong> Animations only work in Preview Mode
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+
+    
+</body>
+</html>
